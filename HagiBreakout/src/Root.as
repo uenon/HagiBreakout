@@ -1,5 +1,7 @@
 package
 {
+    import feathers.themes.MetalWorksMobileTheme;
+    
     import starling.core.Starling;
     import starling.display.Image;
     import starling.display.Sprite;
@@ -19,7 +21,8 @@ package
         private static var sAssets:AssetManager;
         
         private var mActiveScene:Sprite;
-        
+		private var theme:MetalWorksMobileTheme;
+		
         public function Root()
         {
             addEventListener(Menu.START_GAME, onStartGame);
@@ -30,6 +33,8 @@ package
         
         public function start(background:Texture, assets:AssetManager):void
         {
+			theme = new MetalWorksMobileTheme(stage);
+			
             // the asset manager is saved as a static variable; this allows us to easily access
             // all the assets from everywhere by simply calling "Root.assets"
             sAssets = assets;
