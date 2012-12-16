@@ -99,9 +99,8 @@ package
             showScene(MenuScene);
         }
         
-        private function onStartGame(event:Event, gameMode:String):void
+        private function onStartGame():void
         {
-            trace("Game starts! Mode: " + gameMode);
             showScene(GameScene);
         }
         
