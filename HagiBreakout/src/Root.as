@@ -1,6 +1,10 @@
 package
 {
-    import feathers.themes.MetalWorksMobileTheme;
+    import data.Settings;
+    
+    import scenes.GameScene;
+    import scenes.MenuScene;
+    import scenes.SettingsScene;
     
     import starling.core.Starling;
     import starling.display.Image;
@@ -10,8 +14,6 @@ package
     
     import utils.AssetManager;
     import utils.ProgressBar;
-    import scenes.GameScene;
-    import scenes.MenuScene;
 
     /** The Root class is the topmost display object in your game. It loads all the assets
      *  and displays a progress bar while this is happening. Later, it is responsible for
@@ -20,22 +22,29 @@ package
      *  controls the high level behaviour of your game. */
     public class Root extends Sprite
     {
-        private static var sAssets:AssetManager;
+		private static var sTheme:FeathersTheme;
+		private static var sSettings:Settings;
+		private static var sAssets:AssetManager;
         
         private var mActiveScene:Sprite;
-		private var theme:MetalWorksMobileTheme;
 		
         public function Root()
         {
-            addEventListener(MenuScene.START_GAME, onStartGame);
+			addEventListener(MenuScene.START_GAME, onStartGame);
+			addEventListener(MenuScene.OPEN_SETTINGS,  onOpenSetting);
+			addEventListener(SettingsScene.CLOSE_SETTINGS,  onCloseSetting);
             addEventListener(GameScene.GAME_OVER,  onGameOver);
             
             // not more to do here -- Startup will call "start" immediately.
         }
-        
+		
         public function start(background:Texture, assets:AssetManager):void
         {
-			theme = new MetalWorksMobileTheme(stage);
+			sTheme = new FeathersTheme(stage);
+			
+			sSettings = new Settings();
+			sSettings.statsVisible = Starling.current.showStats;
+			sSettings.frameRate = Starling.current.nativeStage.frameRate;
 			
             // the asset manager is saved as a static variable; this allows us to easily access
             // all the assets from everywhere by simply calling "Root.assets"
@@ -73,6 +82,16 @@ package
                     }, 0.15);
             });
         }
+		
+		private function onOpenSetting():void
+		{
+			showScene(SettingsScene);
+		}
+		
+		private function onCloseSetting():void
+		{
+			showScene(MenuScene);
+		}
         
         private function onGameOver(event:Event, score:int):void
         {
@@ -92,7 +111,9 @@ package
             mActiveScene = new screen();
             addChild(mActiveScene);
         }
-        
+		
+		public static function get theme():FeathersTheme { return sTheme; }
+		public static function get settings():Settings { return sSettings; }
         public static function get assets():AssetManager { return sAssets; }
     }
 }
