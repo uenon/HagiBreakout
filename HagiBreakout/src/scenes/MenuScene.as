@@ -1,4 +1,4 @@
-package
+package scenes
 {
     import flash.text.TextFormat;
     
@@ -16,11 +16,11 @@ package
      *  start the actual game. In a real game, it will probably contain several buttons and
      *  link to several screens (e.g. a settings screen or the credits). If your menu contains
      *  a lot of logic, you could use the "Feathers" library to make your life easier. */
-    public class Menu extends Sprite
+    public class MenuScene extends Sprite
     {
         public static const START_GAME:String = "startGame";
         
-        public function Menu()
+        public function MenuScene()
         {
 			addEventListener(Event.ADDED_TO_STAGE, init);
         }

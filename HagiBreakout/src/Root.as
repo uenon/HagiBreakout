@@ -10,6 +10,8 @@ package
     
     import utils.AssetManager;
     import utils.ProgressBar;
+    import scenes.GameScene;
+    import scenes.MenuScene;
 
     /** The Root class is the topmost display object in your game. It loads all the assets
      *  and displays a progress bar while this is happening. Later, it is responsible for
@@ -25,8 +27,8 @@ package
 		
         public function Root()
         {
-            addEventListener(Menu.START_GAME, onStartGame);
-            addEventListener(Game.GAME_OVER,  onGameOver);
+            addEventListener(MenuScene.START_GAME, onStartGame);
+            addEventListener(GameScene.GAME_OVER,  onGameOver);
             
             // not more to do here -- Startup will call "start" immediately.
         }
@@ -67,7 +69,7 @@ package
                     Starling.juggler.delayCall(function():void
                     {
                         progressBar.removeFromParent(true);
-                        showScene(Menu);
+                        showScene(MenuScene);
                     }, 0.15);
             });
         }
@@ -75,13 +77,13 @@ package
         private function onGameOver(event:Event, score:int):void
         {
             trace("Game Over! Score: " + score);
-            showScene(Menu);
+            showScene(MenuScene);
         }
         
         private function onStartGame(event:Event, gameMode:String):void
         {
             trace("Game starts! Mode: " + gameMode);
-            showScene(Game);
+            showScene(GameScene);
         }
         
         private function showScene(screen:Class):void

@@ -1,4 +1,4 @@
-package 
+package scenes 
 {
     import nape.geom.Vec2;
     import nape.phys.Body;
@@ -17,11 +17,11 @@ package
 
     /** The Game class represents the actual game. In this scaffold, it just displays a 
      *  Starling that moves around fast. When the user touches the Starling, the game ends. */ 
-    public class Game extends Sprite
+    public class GameScene extends Sprite
     {
         public static const GAME_OVER:String = "gameOver";
 		
-		public function Game()
+		public function GameScene()
 		{
 			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
