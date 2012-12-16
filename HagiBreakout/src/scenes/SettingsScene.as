@@ -26,6 +26,7 @@ package scenes
 		private var _header:Header;
 		private var _statsToggle:ToggleSwitch;
 		private var _frameRatePicker:PickerList;
+		private var _napeToggle:ToggleSwitch;
 		
 		override protected function initialize():void
 		{
@@ -49,12 +50,17 @@ package scenes
 			this._frameRatePicker.selectedItem = Root.settings.frameRate;
 			this._frameRatePicker.addEventListener(Event.CHANGE, frameRatePicker_changeHandler);
 			
+			this._napeToggle = new ToggleSwitch();
+			this._napeToggle.isSelected = Root.settings.napeDebugVisible;
+			this._napeToggle.addEventListener(Event.CHANGE, napeToggle_changeHandler);
+			
 			this._list = new List();
 			this._list.isSelectable = false;
 			this._list.dataProvider = new ListCollection(
 				[
 					{ label: "stats", accessory: this._statsToggle },
 					{ label: "fps", accessory: this._frameRatePicker },
+					{ label: "Nape debug", accessory: this._napeToggle },
 				]);
 			this.addChild(this._list);
 			
@@ -104,6 +110,11 @@ package scenes
 		{
 			Root.settings.frameRate = this._frameRatePicker.selectedItem as Number;
 			Starling.current.nativeStage.frameRate = Root.settings.frameRate;
+		}
+		
+		private function napeToggle_changeHandler():void
+		{
+			Root.settings.napeDebugVisible = this._napeToggle.isSelected;
 		}
 	}
 }
