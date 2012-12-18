@@ -5,10 +5,10 @@ iOSとAndroid向けにシンプルなブロック崩しゲームを創るとい�
 
 ストアへのリリースはしません。単にオープンソースで作ることを楽しみましょう。
 
-以下の技術を使う予定です。
-- Starling 1.3
-- Feathers 1.0
-- Nape 2.0.1 (or Box2d)
+以下の技術を使います。
+- Starling 1.3 RC
+- Feathers 1.0 BETA
+- Nape 2.0.3
 - Adobe Air 3.5
 - Flash Builder 4.7
 
