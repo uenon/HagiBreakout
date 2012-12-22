@@ -27,12 +27,19 @@ package utils
     import starling.textures.Texture;
     import starling.textures.TextureAtlas;
     
-    /** The AssetManager handles loading of and access to a variety of asset types. You can 
+    /** The AssetManager handles loading and accessing a variety of asset types. You can 
      *  add assets directly (via the 'add...' methods) or asynchronously via a queue. This allows
-     *  you to deal with assets in a unified way, no matter if they are loaded from a file, URL,
-     *  or from an embedded object. */    
+     *  you to deal with assets in a unified way, no matter if they are loaded from a file, 
+     *  directory, URL, or from an embedded object.
+     *  
+     *  <p>If you load files from disk, the following types are supported:</p>
+     *  <code>png, jpg, atf, mp3, xml, fnt</code> 
+     */    
     public class AssetManager
     {
+        private const SUPPORTED_EXTENSIONS:Vector.<String> = 
+            new <String>["png", "jpg", "jpeg", "atf", "mp3", "xml", "fnt"]; 
+        
         private var mScaleFactor:Number;
         private var mGenerateMipmaps:Boolean;
         private var mVerbose:Boolean;
@@ -276,7 +283,13 @@ package utils
                         if (rawAsset["isDirectory"])
                             enqueue.apply(this, rawAsset["getDirectoryListing"]());
                         else
-                            push(rawAsset["url"]);
+                        {
+                            var extension:String = rawAsset["extension"].toLowerCase();
+                            if (SUPPORTED_EXTENSIONS.indexOf(extension) != -1)
+                                push(rawAsset["url"]);
+                            else
+                                log("Ignoring unsupported file '" + rawAsset["name"] + "'");
+                        }
                     }
                 }
                 else if (rawAsset is String)
@@ -341,7 +354,12 @@ package utils
             function processXmls():void
             {
                 // xmls are processed seperately at the end, because the textures they reference
-                // have to be available
+                // have to be available for other XMLs. Texture atlases are processed first:
+                // that way, their textures can be referenced, too.
+                
+                xmls.sort(function(a:XML, b:XML):int { 
+                    return a.localName() == "TextureAtlas" ? -1 : 1; 
+                });
                 
                 for each (var xml:XML in xmls)
                 {
