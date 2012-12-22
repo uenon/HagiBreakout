@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with TexturePacker http://texturepacker.com-->
 <!-- $TexturePacker:SmartUpdate:ae007dd33d4c86669604ed1e2c4bcc84$ -->
-<TextureAtlas imagePath="hagibreakoutx2.png">
+<TextureAtlas imagePath="hagibreakout.png">
     <SubTexture name="game_ball" x="2" y="2018" width="24" height="25"/>
     <SubTexture name="game_bg" x="686" y="2" width="640" height="960"/>
     <SubTexture name="game_block_big" x="1952" y="184" width="64" height="44"/>
