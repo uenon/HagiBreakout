@@ -43,8 +43,8 @@ package
 			sTheme = new FeathersTheme(stage);
 			
 			sSettings = new Settings();
-			sSettings.statsVisible = Starling.current.showStats;
-			sSettings.frameRate = Starling.current.nativeStage.frameRate;
+			Starling.current.showStats = sSettings.statsVisible;
+			Starling.current.nativeStage.frameRate = sSettings.frameRate;
 			
             // the asset manager is saved as a static variable; this allows us to easily access
             // all the assets from everywhere by simply calling "Root.assets"

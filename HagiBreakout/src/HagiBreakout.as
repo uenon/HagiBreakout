@@ -16,7 +16,7 @@ package
     
     import utils.AssetManager;
     
-    [SWF(frameRate="30", backgroundColor="#000")]
+    [SWF(frameRate="60", backgroundColor="#000")]
     public class HagiBreakout extends Sprite
     {
         // We embed the "Ubuntu" font. Beware: the 'embedAsCFF'-part IS REQUIRED!!!
