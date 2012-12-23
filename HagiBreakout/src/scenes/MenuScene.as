@@ -4,15 +4,13 @@ package scenes
     import flash.net.navigateToURL;
     
     import starling.display.Button;
+    import starling.display.Image;
     import starling.display.Sprite;
     import starling.events.Event;
     import starling.text.BitmapFont;
     import starling.text.TextField;
+    import starling.utils.HAlign;
     
-    /** The Menu shows the logo of the game and a start button that will, once triggered, 
-     *  start the actual game. In a real game, it will probably contain several buttons and
-     *  link to several screens (e.g. a settings screen or the credits). If your menu contains
-     *  a lot of logic, you could use the "Feathers" library to make your life easier. */
     public class MenuScene extends Sprite
     {
         public static const START_GAME:String = "startGame";
@@ -27,33 +25,33 @@ package scenes
         {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
-			var titleImage:Sprite = TextField.getBitmapFont("Desyrel").createSprite(250, 50, "HagiBreakout", BitmapFont.NATIVE_SIZE, 0xFFFFFF);
-			titleImage.x = (Constants.STAGE_WIDTH - 250) / 2;
-			titleImage.y = 50;
-            addChild(titleImage);
+			var background:Image = new Image(Root.assets.getTexture("title_bg"));
+			addChild(background);
 			
-			var startButton:Button = new Button(Root.assets.getTexture("button_normal"), "Start");
-			startButton.fontName = "Ubuntu";
-			startButton.scaleX = 2;
-			startButton.scaleY = 2;
+			var startButton:Button = new Button(Root.assets.getTexture("title_play_btn"));
 			startButton.x = (Constants.STAGE_WIDTH - startButton.width) / 2;
-			startButton.y = (Constants.STAGE_HEIGHT - startButton.height) / 2;
+			startButton.y = Constants.STAGE_HEIGHT * 0.7;
 			startButton.addEventListener(Event.TRIGGERED, startButton_triggeredHandler);
 			addChild(startButton);
 			
-			var settingsButton:Button = new Button(Root.assets.getTexture("button_normal"), "Settings");
-			settingsButton.fontName = "Ubuntu";
-			settingsButton.x = (Constants.STAGE_WIDTH - settingsButton.width) / 2;
-			settingsButton.y = Constants.STAGE_HEIGHT * 0.7;
+			var settingsButton:Button = new Button(Root.assets.getTexture("game_handle"));
+			settingsButton.scaleX = 0.5;
+			settingsButton.scaleY = 0.5;
+			settingsButton.x = Constants.STAGE_WIDTH - settingsButton.width - 5;
+			settingsButton.y = 5;
 			settingsButton.addEventListener(Event.TRIGGERED, settingsButton_triggeredHandler);
 			addChild(settingsButton);
 			
-			var githubButton:Button = new Button(Root.assets.getTexture("button_normal"), "GitHub");
-			githubButton.fontName = "Ubuntu";
-			githubButton.x = (Constants.STAGE_WIDTH - settingsButton.width) / 2;
-			githubButton.y = settingsButton.y + settingsButton.height + 10;
-			githubButton.addEventListener(Event.TRIGGERED, githubButton_triggeredHandler);
-			addChild(githubButton);
+			var setteingLabel:Sprite = TextField.getBitmapFont("FFFAurora").createSprite(80, 20, "Setting >", BitmapFont.NATIVE_SIZE / 2, 0xFFFFFF, HAlign.RIGHT);
+			setteingLabel.x = 180;
+			setteingLabel.y = 10;
+			addChild(setteingLabel);
+			
+			var urlButton:Button = new Button(Root.assets.getTexture("title_url"));
+			urlButton.x = (Constants.STAGE_WIDTH - urlButton.width) / 2;
+			urlButton.y = Constants.STAGE_HEIGHT - urlButton.height - 20;
+			urlButton.addEventListener(Event.TRIGGERED, urlButton_triggeredHandler);
+			addChild(urlButton);
         }
 		
 		private function startButton_triggeredHandler():void
@@ -66,7 +64,7 @@ package scenes
 			dispatchEventWith(OPEN_SETTINGS, true);
 		}
 		
-		private function githubButton_triggeredHandler():void
+		private function urlButton_triggeredHandler():void
 		{
 			navigateToURL(new URLRequest("https://github.com/CreateSomethingWithStarling/HagiBreakout"));
 		}

@@ -9,14 +9,14 @@ package scenes
     import nape.space.Space;
     
     import starling.core.Starling;
+    import starling.display.DisplayObject;
     import starling.display.Image;
     import starling.display.Sprite;
     import starling.events.Event;
+    import starling.events.Touch;
     import starling.events.TouchEvent;
     import starling.events.TouchPhase;
 
-    /** The Game class represents the actual game. In this scaffold, it just displays a 
-     *  Starling that moves around fast. When the user touches the Starling, the game ends. */ 
     public class GameScene extends Sprite
     {
 		public static const GAME_OVER:String = "gameOver";
@@ -31,20 +31,65 @@ package scenes
 		private var space:Space;
 		
 		private var napeDebugImage:NapeDebugImage;
+
+		private var handle:Body;
 		
-		private function init(event:Event):void
+		private function init():void
 		{
+			removeEventListener(Event.ADDED_TO_STAGE, init);
+			
 			if (Root.settings.napeDebugVisible)
 				napeDebugImage = new NapeDebugImage(stage.stageWidth, stage.stageHeight);
 			
+			var background:Image = new Image(Root.assets.getTexture("game_bg"));
+			addChild(background);
+			
+			var wallImage:Image = new Image(Root.assets.getTexture("game_wall"));
+			addChild(wallImage);
+			
 			space = new Space(new Vec2(0, 1000));
 			
-			var floor:Body = new Body(BodyType.STATIC);
-			floor.shapes.add( new Polygon(Polygon.rect(0, Constants.STAGE_HEIGHT, Constants.STAGE_WIDTH, 20)));
-			floor.space = space;
+			var wall:Body = new Body(BodyType.STATIC);
+			wall.shapes.add(new Polygon(Polygon.rect(0, 0, Constants.STAGE_WIDTH, 10)));
+			wall.shapes.add(new Polygon(Polygon.rect(0, 0, 10, Constants.STAGE_HEIGHT)));
+			wall.shapes.add(new Polygon(Polygon.rect(Constants.STAGE_WIDTH, 0, -10, Constants.STAGE_HEIGHT)));
+			wall.space = space;
+			
+			var blockSmallImage:Image = new Image(Root.assets.getTexture("game_block_small"));
+			blockSmallImage.x = Constants.STAGE_WIDTH / 2 - 50;
+			blockSmallImage.y = Constants.STAGE_HEIGHT / 2 - 50;
+			addChild(blockSmallImage);
+			
+			var blockSmall:Body = new Body(BodyType.STATIC, new Vec2(blockSmallImage.x, blockSmallImage.y));
+		//	blockSmall.userData.graphic = blockSmallImage;
+			blockSmall.shapes.add(new Polygon(Polygon.rect(0, 0, blockSmallImage.width, blockSmallImage.height)));
+			blockSmall.space = space;
+			
+			var blockBigImage:Image = new Image(Root.assets.getTexture("game_block_big"));
+			blockBigImage.x = Constants.STAGE_WIDTH / 2 + 50;
+			blockBigImage.y = Constants.STAGE_HEIGHT / 2 + 200;
+			addChild(blockBigImage);
+			
+			var blockBig:Body = new Body(BodyType.STATIC, new Vec2(blockBigImage.x, blockBigImage.y));
+			//	blockBig.userData.graphic = blockBigImage;
+			blockBig.shapes.add(new Polygon(Polygon.rect(0, 0, blockBigImage.width, blockBigImage.height)));
+			blockBig.space = space;
+			
+			var handleImage:Image = new Image(Root.assets.getTexture("game_handle"));
+			handleImage.x = Constants.STAGE_WIDTH * 0.5;
+			handleImage.y = Constants.STAGE_HEIGHT * 0.7;
+			handleImage.pivotX = handleImage.width / 2;
+			handleImage.pivotY = handleImage.height / 2;
+			addChild(handleImage);
+			
+			handle = new Body(BodyType.KINEMATIC, new Vec2(handleImage.x, handleImage.y));
+			handle.userData.graphic = handleImage;
+			handle.shapes.add(new Circle(handleImage.width / 2, null, new Material(0.1)));
+			handle.space = space;
 			
 			addBall();
 			
+			addEventListener(TouchEvent.TOUCH, touchHandler);
 			addEventListener(Event.ENTER_FRAME, loop);
 		}
 		
@@ -68,19 +113,18 @@ package scenes
 		
 		private function addBall():void
 		{
-			var mBird:Image = new Image(Root.assets.getTexture("starling_rocket"));
-			mBird.pivotX = mBird.width / 2;
-			mBird.pivotY = mBird.height / 2;;
-			mBird.width = 100;
-			mBird.height = 100;
-			addChild(mBird);
-			mBird.touchable = true;
-			mBird.addEventListener(TouchEvent.TOUCH, onBirdTouched);
+			var ballImageName:String =  Math.random() < .5 ? "game_hagisan" : "game_ball";
+			var ballImage:Image = new Image(Root.assets.getTexture(ballImageName));
+			ballImage.pivotX = ballImage.width / 2;
+			ballImage.pivotY = ballImage.height / 2;
+			addChild(ballImage);
+			ballImage.touchable = true;
+			ballImage.addEventListener(TouchEvent.TOUCH, ball_touchHander);
 			
-			var ball:Body = new Body(BodyType.DYNAMIC, new Vec2(Math.random()*Constants.STAGE_WIDTH, 0));
-			ball.shapes.add(new Circle(50, null, new Material(0.7)));
+			var ball:Body = new Body(BodyType.DYNAMIC, new Vec2(Math.random()*(Constants.STAGE_WIDTH - ballImage.width - 20) + 10 + ballImage.width / 2, 10 + ballImage.height / 2));
+			ball.shapes.add(new Circle(ballImage.width / 2, null, new Material(0.7)));
 			ball.space = space;
-			ball.userData.graphic = mBird;
+			ball.userData.graphic = ballImage;
 		}
 		
 		private function updateGraphics(b:Body):void
@@ -92,15 +136,29 @@ package scenes
 			b.userData.graphic.rotation = b.rotation;
 		}
 		
-        private function onBirdTouched(event:TouchEvent):void
+        private function ball_touchHander(event:TouchEvent):void
         {
-            if (event.getTouch(this, TouchPhase.BEGAN))
+            if (event.getTouch(event.currentTarget as DisplayObject, TouchPhase.BEGAN))
             {
                 Root.assets.playSound("click");
                 Starling.juggler.removeTweens(mBird);
                 dispatchEventWith(GAME_OVER, true, 100);
             }
         }
+		
+		private function touchHandler(event:TouchEvent):void
+		{
+			var touch:Touch = event.getTouch(event.currentTarget as DisplayObject);
+			if (!touch)
+				return;
+				
+			if (touch.phase == TouchPhase.BEGAN || touch.phase == TouchPhase.MOVED)
+			{
+				handle.position.x = touch.globalX;
+				handle.position.y = touch.globalY;
+				updateGraphics(handle);
+			}
+		}
     }
 }
 
