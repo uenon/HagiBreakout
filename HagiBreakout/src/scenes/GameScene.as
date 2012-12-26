@@ -141,7 +141,7 @@ package scenes
             if (event.getTouch(event.currentTarget as DisplayObject, TouchPhase.BEGAN))
             {
                 Root.assets.playSound("click");
-                Starling.juggler.removeTweens(mBird);
+            //    Starling.juggler.removeTweens(mBird);
                 dispatchEventWith(GAME_OVER, true, 100);
             }
         }
