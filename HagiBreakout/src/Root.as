@@ -27,6 +27,8 @@ package
 		private static var sAssets:AssetManager;
         
         private var mActiveScene:Sprite;
+
+        private var startupBackground:Image;
 		
         public function Root()
         {
@@ -55,7 +57,8 @@ package
             // 1) we need it right away, otherwise we have an empty frame
             // 2) the Startup class can decide on the right image, depending on the device.
             
-            addChild(new Image(background));
+			startupBackground = new Image(background);
+            addChild(startupBackground);
             
             // The AssetManager contains all the raw asset data, but has not created the textures
             // yet. This takes some time (the assets might be loaded from disk or even via the
@@ -78,6 +81,7 @@ package
                     Starling.juggler.delayCall(function():void
                     {
                         progressBar.removeFromParent(true);
+						startupBackground.removeFromParent(true);
                         showScene(MenuScene);
                     }, 0.15);
             });

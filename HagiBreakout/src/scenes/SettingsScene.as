@@ -31,7 +31,7 @@ package scenes
 		override protected function initialize():void
 		{
 			// ScreenNavigatorを使えばScreenのサイズは自動的に設定されるけど、ここでは明示的に。
-			setSize(Starling.current.stage.width, Starling.current.stage.height);
+			setSize(Starling.current.stage.stageWidth, Starling.current.stage.stageHeight);
 			
 			// これを設定するとAndroidのハードキーをハンドリングできるよう（Screenの機能）
 			backButtonHandler = closeButton_triggeredHandler;
