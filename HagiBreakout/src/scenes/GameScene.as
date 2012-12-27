@@ -1,14 +1,19 @@
 package scenes 
 {
+    import flash.utils.getTimer;
+    
+    import feathers.core.PopUpManager;
+    
     import nape.geom.Vec2;
     import nape.phys.Body;
+    import nape.phys.BodyList;
     import nape.phys.BodyType;
     import nape.phys.Material;
     import nape.shape.Circle;
     import nape.shape.Polygon;
     import nape.space.Space;
     
-    import starling.core.Starling;
+    import starling.display.Button;
     import starling.display.DisplayObject;
     import starling.display.Image;
     import starling.display.Sprite;
@@ -16,6 +21,8 @@ package scenes
     import starling.events.Touch;
     import starling.events.TouchEvent;
     import starling.events.TouchPhase;
+    import starling.text.BitmapFont;
+    import starling.text.TextField;
 
     public class GameScene extends Sprite
     {
@@ -33,6 +40,11 @@ package scenes
 		private var napeDebugImage:NapeDebugImage;
 
 		private var handle:Body;
+
+		private var gameStartTime:int;
+
+		private var isPlaying:Boolean;
+		private var ballList:BodyList;
 		
 		private function init():void
 		{
@@ -40,6 +52,9 @@ package scenes
 			
 			if (Root.settings.napeDebugVisible)
 				napeDebugImage = new NapeDebugImage(stage.stageWidth, stage.stageHeight);
+			
+			isPlaying = false;
+			ballList = new BodyList();
 			
 			var background:Image = new Image(Root.assets.getTexture("game_bg"));
 			addChild(background);
@@ -87,14 +102,30 @@ package scenes
 			handle.shapes.add(new Circle(handleImage.width / 2, null, new Material(0.1)));
 			handle.space = space;
 			
-			addBall();
-			
 			addEventListener(TouchEvent.TOUCH, touchHandler);
 			addEventListener(Event.ENTER_FRAME, loop);
 		}
 		
+		private function startGame():void
+		{
+			isPlaying = true;
+			gameStartTime = getTimer();
+			addBall();
+		}
+		
+		private function resetGame():void
+		{
+			clearBalls();
+			handle.position.x = Constants.STAGE_WIDTH * 0.5;
+			handle.position.y = Constants.STAGE_HEIGHT * 0.7;
+			updateGraphics(handle);
+		}
+	
 		private function loop(event:Event, passedTime:Number):void
 		{
+			if (!isPlaying)
+				return;
+			
 			space.step(passedTime);
 			
 			if (Math.random() < 1 / Root.settings.frameRate)
@@ -111,10 +142,20 @@ package scenes
 			}
 		}
 		
+		private function updateGraphics(b:Body):void
+		{
+			//	trace(b.position.x, b.position.y);
+			
+			b.userData.graphic.x = b.position.x;
+			b.userData.graphic.y = b.position.y;
+			b.userData.graphic.rotation = b.rotation;
+		}
+		
 		private function addBall():void
 		{
 			var ballImageName:String =  Math.random() < .5 ? "game_hagisan" : "game_ball";
 			var ballImage:Image = new Image(Root.assets.getTexture(ballImageName));
+			ballImage.name = ballImageName;
 			ballImage.pivotX = ballImage.width / 2;
 			ballImage.pivotY = ballImage.height / 2;
 			addChild(ballImage);
@@ -125,34 +166,158 @@ package scenes
 			ball.shapes.add(new Circle(ballImage.width / 2, null, new Material(0.7)));
 			ball.space = space;
 			ball.userData.graphic = ballImage;
+			
+			ballList.add(ball);
 		}
 		
-		private function updateGraphics(b:Body):void
+		private function clearBalls():void
 		{
-		//	trace(b.position.x, b.position.y);
+			ballList.foreach(function(body:Body):void
+			{
+				body.space = null;
+				removeChild(body.userData.graphic as DisplayObject, true);
+			});
 			
-			b.userData.graphic.x = b.position.x;
-			b.userData.graphic.y = b.position.y;
-			b.userData.graphic.rotation = b.rotation;
+			ballList.clear();
 		}
 		
         private function ball_touchHander(event:TouchEvent):void
         {
+			if (!isPlaying)
+				return;
+			
             if (event.getTouch(event.currentTarget as DisplayObject, TouchPhase.BEGAN))
             {
+				event.stopImmediatePropagation();
+				
                 Root.assets.playSound("click");
             //    Starling.juggler.removeTweens(mBird);
-                dispatchEventWith(GAME_OVER, true, 100);
+				
+				if ((event.currentTarget as DisplayObject).name == "game_hagisan")
+					doDropped();
+				else
+					doGameClear();
             }
         }
 		
+		private function doDropped():void
+		{
+			isPlaying = false;
+			
+			var popup:Sprite = new Sprite();
+			var background:Image = new Image(Root.assets.getTexture("result_bg"));
+			popup.addChild(background);
+			
+			var titleLabel:TextField = new TextField(170, TextField.getBitmapFont("FFFAurora").lineHeight, "Dropped!", "FFFAurora", BitmapFont.NATIVE_SIZE, 0xFF0000);
+			titleLabel.x = background.width - titleLabel.width >> 1;
+			titleLabel.y = 10;
+			titleLabel.touchable = false;
+			popup.addChild(titleLabel);
+			
+			var continueButton:Button = new Button(Root.assets.getTexture("result_replay_btn"));
+			continueButton.x = background.width - continueButton.width >> 1;
+			continueButton.y = 70;
+			popup.addChild(continueButton);
+			
+			var continueLabel:TextField = new TextField(170, TextField.getBitmapFont("FFFAurora").lineHeight, "CONTINUE", "FFFAurora", BitmapFont.NATIVE_SIZE, 0xFF0000);
+			continueLabel.x = background.width - continueLabel.width >> 1;
+			continueLabel.y = 70;
+			continueLabel.touchable = false;
+			popup.addChild(continueLabel);
+			
+			var replayButton:Button = new Button(Root.assets.getTexture("result_replay_btn"));
+			replayButton.x = background.width - replayButton.width >> 1;
+			replayButton.y = 130;
+			popup.addChild(replayButton);
+			
+			var topButton:Button = new Button(Root.assets.getTexture("result_top_btn"));
+			topButton.x = background.width - topButton.width >> 1;
+			topButton.y = 190;
+			popup.addChild(topButton);
+			
+			popup.addEventListener(Event.TRIGGERED, function (event:Event):void
+			{
+				PopUpManager.removePopUp(popup, true);
+				
+				switch(event.target)
+				{
+					case continueButton:
+						break;
+					case replayButton:
+					{
+						resetGame();
+						break;
+					}
+					case topButton:
+					{
+						dispatchEventWith(GAME_OVER, true, -1);
+						break;
+					}
+				}
+			});
+			
+			PopUpManager.addPopUp(popup);
+		}
+		
+		private function doGameClear():void
+		{
+			isPlaying = false;
+			
+			var popup:Sprite = new Sprite();
+			var background:Image = new Image(Root.assets.getTexture("result_bg"));
+			popup.addChild(background);
+			
+			var now:int = getTimer();
+			var resultTime:int = now - gameStartTime;
+			
+			var resultTextField:TextField = new TextField(170, TextField.getBitmapFont("FFFAurora").lineHeight, String(resultTime), "FFFAurora", BitmapFont.NATIVE_SIZE, 0xFFFFFF);
+		//	resultTextField.border = true;
+			resultTextField.x = background.width - resultTextField.width >> 1;
+			resultTextField.y = 70;
+			popup.addChild(resultTextField);
+			
+			var replayButton:Button = new Button(Root.assets.getTexture("result_replay_btn"));
+			replayButton.x = background.width - replayButton.width >> 1;
+			replayButton.y = 130;
+			popup.addChild(replayButton);
+			
+			var topButton:Button = new Button(Root.assets.getTexture("result_top_btn"));
+			topButton.x = background.width - topButton.width >> 1;
+			topButton.y = 190;
+			popup.addChild(topButton);
+			
+			popup.addEventListener(Event.TRIGGERED, function (event:Event):void
+			{
+				PopUpManager.removePopUp(popup, true);
+				
+				switch(event.target)
+				{
+					case replayButton:
+					{
+						resetGame();
+						break;
+					}
+					case topButton:
+					{
+						dispatchEventWith(GAME_OVER, true, resultTime);
+						break;
+					}
+				}
+			});
+			
+			PopUpManager.addPopUp(popup);
+		}
+		
 		private function touchHandler(event:TouchEvent):void
 		{
-			var touch:Touch = event.getTouch(event.currentTarget as DisplayObject);
+			var touch:Touch = event.getTouch(this);
 			if (!touch)
 				return;
-				
-			if (touch.phase == TouchPhase.BEGAN || touch.phase == TouchPhase.MOVED)
+			
+			if (!isPlaying && touch.phase == TouchPhase.BEGAN)
+				startGame();
+			
+			if (isPlaying && (touch.phase == TouchPhase.BEGAN || touch.phase == TouchPhase.MOVED))
 			{
 				handle.position.x = touch.globalX;
 				handle.position.y = touch.globalY;
