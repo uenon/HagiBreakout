@@ -51,7 +51,10 @@ package scenes
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
 			if (Root.settings.napeDebugVisible)
+			{
 				napeDebugImage = new NapeDebugImage(stage.stageWidth, stage.stageHeight);
+				addChild(napeDebugImage);
+			}
 			
 			isPlaying = false;
 			ballList = new BodyList();
@@ -138,7 +141,7 @@ package scenes
 				napeDebugImage.update(space);
 				
 				// napeDebugImageを最前面に表示する
-				addChild(napeDebugImage);
+				setChildIndex(napeDebugImage, numChildren - 1);
 			}
 		}
 		
